@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background-color: #05060f;
+  /* Brand-Deep, shows as letterboxing on desktop */
+  color: #f5f6ff;
+  /* Text-Primary */
+  font-family: "Inter", sans-serif;
+  overscroll-behavior-y: contain;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------------
+   Mobile-first phone frame. On any viewport wider than the phone itself,
+   the app is centered and clamped to max-w-phone so desktop users see a
+   simulated device rather than a stretched layout. Used in app/layout.tsx.
+--------------------------------------------------------------------- */
+.thinktok-frame {
+  @apply max-w-phone mx-auto h-screen w-full relative overflow-hidden bg-Brand-Main;
+}
+
+/* Snap-scrolling feed container for the vertical video swipe. */
+.feed-scroll {
+  @apply h-full w-full overflow-y-scroll snap-y snap-mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.feed-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.feed-item {
+  @apply h-full w-full snap-start snap-always relative flex-shrink-0;
+}
+
+.btn-primary {
+  @apply transition-all duration-100 ease-in-out;
+  background-color: #C6F516;
+  /* Bright lime green */
+  color: #0B0E24 !important;
+  /* Dark navy text */
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.6),
+    0 6px 0 #8CBE11,
+    0 8px 20px rgba(198, 245, 22, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(6px);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.6),
+    0 0 0 #8CBE11,
+    0 4px 10px rgba(198, 245, 22, 0.3);
+}
+
+.btn-primary-sm {
+  @apply transition-all duration-100 ease-in-out;
+  background-color: #C6F516;
+  color: #0B0E24 !important;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 3px 0 #8CBE11,
+    0 4px 10px rgba(198, 245, 22, 0.3);
+}
+
+.btn-primary-sm:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 0 0 #8CBE11,
+    0 2px 5px rgba(198, 245, 22, 0.3);
+}
+
+.btn-chunky {
+  @apply rounded-full font-display font-bold text-lg px-8 py-4 btn-primary;
+}
+
+/* Respect reduced-motion preferences across the app. */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.btn-secondary {
+  @apply transition-all duration-100 ease-in-out;
+  background-color: #E62250;
+  color: #FFFFFF !important;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    0 6px 0 #A81436,
+    0 8px 20px rgba(230, 34, 80, 0.4);
+}
+
+.btn-secondary:active {
+  transform: translateY(6px);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    0 0 0 #A81436,
+    0 4px 10px rgba(230, 34, 80, 0.4);
+}
