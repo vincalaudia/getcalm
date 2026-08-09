@@ -96,7 +96,7 @@ export default function WelcomePage() {
             aria-label="Pilih Mode Normal"
           >
             <Image
-              src="/assets/Button_Normal.png"
+              src="/assets/button_normal.png"
               alt="Mode Normal"
               width={240}
               height={160}
@@ -112,7 +112,7 @@ export default function WelcomePage() {
             aria-label="Pilih Mode Tantangan"
           >
             <Image
-              src="/assets/Button_Tantangan.png"
+              src="/assets/button_tantangan.png"
               alt="Mode Tantangan"
               width={240}
               height={160}
