@@ -215,7 +215,7 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `ThinkTok_Kelas_${code}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `GetCalm_Kelas_${code}_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

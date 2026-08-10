@@ -13,14 +13,26 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user && !pathname?.includes("/login")) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
         router.replace("/teacher/login");
       } else {
-        setEmail(data.user?.email ?? null);
+        setEmail(session.user?.email ?? null);
       }
       setIsAuthChecked(true);
     });
+
+    // Also do an initial check just in case the event doesn't fire immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace("/teacher/login");
+      } else {
+        setEmail(session.user?.email ?? null);
+      }
+      setIsAuthChecked(true);
+    });
+
+    return () => subscription.unsubscribe();
   }, [pathname, router]);
 
   const isFullscreenPage = pathname?.includes("/login") || pathname?.includes("/live");
@@ -33,7 +45,7 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col" style={{ background: "#F0FAF8", fontFamily: "'Inter', sans-serif" }}>
       <header className="w-full px-6 py-4 flex items-center justify-between border-b" style={{ background: "white", borderColor: "#D1F0EB" }}>
         <div className="flex items-center gap-2">
-          <span className="font-display font-extrabold text-lg" style={{ color: "#1A2A5E" }}>ThinkTok</span>
+          <span className="font-display font-extrabold text-lg" style={{ color: "#1A2A5E" }}>GetCalm</span>
           <span className="font-body text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "#C6F516", color: "#1A2A5E" }}>GURU</span>
         </div>
         <div className="flex items-center gap-4">

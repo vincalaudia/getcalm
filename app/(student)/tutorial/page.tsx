@@ -198,9 +198,9 @@ function Slide1() {
       </motion.div>
 
       <ChatBubble>
-        <p><strong>Halo! Aku Tita! 🤖✨</strong></p>
+        <p><strong>Kenalin, aku Tita! 🤖✨</strong></p>
         <p className="mt-1">
-          Aku robot detektif fakta yang lucu! Aku punya misi penting di media sosial <strong>ThinkTok</strong>...
+          Aku robot detektif fakta yang lucu! Aku punya misi penting di media sosial <strong>GetCalm</strong>...
         </p>
         <p className="mt-1">
           Di sana banyak video beredar. Ada yang <strong>beneran ✅</strong>, tapi ada juga yang{" "}

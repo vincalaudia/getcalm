@@ -17,22 +17,20 @@ import {
   ActionType,
   QuizQuestionRow,
 } from "./types";
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "./types";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  // Fail loudly in dev rather than silently returning a broken client.
-  // eslint-disable-next-line no-console
   console.warn(
     "[ThinkTok] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. " +
     "Add them to .env.local before hitting the database."
   );
 }
 
-export const supabase = createClient<Database>(
+export const supabase = createBrowserClient<Database>(
   supabaseUrl ?? "",
   supabaseAnonKey ?? ""
 );

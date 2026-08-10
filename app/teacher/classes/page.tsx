@@ -25,12 +25,12 @@ export default function ClassesPage() {
 
   const fetchClasses = useCallback(async () => {
     setIsLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.replace("/teacher/login"); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { router.replace("/teacher/login"); return; }
     const { data } = await supabase
       .from("classes")
       .select("*")
-      .eq("teacher_id", user.id)
+      .eq("teacher_id", session.user.id)
       .order("created_at", { ascending: false });
     setClasses((data as ClassRow[]) ?? []);
     setIsLoading(false);
@@ -45,12 +45,12 @@ export default function ClassesPage() {
     if (!code || !newName.trim()) { setFormError("Nama kelas dan kode wajib diisi."); return; }
     if (!/^[A-Z0-9]+$/.test(code)) { setFormError("Kode hanya boleh huruf kapital dan angka."); return; }
     setIsSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
     const { error } = await supabase.from("classes").insert({
       class_name: newName.trim(),
       class_code: code,
-      teacher_id: user.id,
+      teacher_id: session.user.id,
       active_from: new Date(newFrom).toISOString(),
       active_until: newUntil ? new Date(newUntil).toISOString() : null,
     } as never);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Eye, EyeOff, LogIn, UserPlus, Mail, CheckCircle2, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, LogIn, UserPlus, Mail, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 export default function TeacherLoginPage() {
   const router = useRouter();
@@ -40,12 +40,13 @@ export default function TeacherLoginPage() {
         } else {
           setError(`Gagal masuk: ${error.message}`);
         }
-      } else if (data.user) {
+      } else if (data.session) {
         setSuccessMsg("Berhasil masuk! Membuka halaman kelas...");
         setTimeout(() => {
-          router.push("/teacher/classes");
-          router.refresh();
+          window.location.href = "/teacher/classes";
         }, 500);
+      } else {
+        setError("Akun belum diverifikasi atau sesi tidak valid. Silakan cek email Anda.");
       }
     } else {
       // Sign Up Mode
@@ -70,8 +71,7 @@ export default function TeacherLoginPage() {
           // Logged in immediately
           setSuccessMsg("Akun berhasil dibuat dan Anda telah masuk!");
           setTimeout(() => {
-            router.push("/teacher/classes");
-            router.refresh();
+            window.location.href = "/teacher/classes";
           }, 800);
         } else {
           // Confirmation required
@@ -92,7 +92,7 @@ export default function TeacherLoginPage() {
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-display font-extrabold text-3xl" style={{ color: "#1A2A5E" }}>
-              ThinkTok
+              GetCalm
             </span>
             <span className="font-body text-xs px-2.5 py-0.5 rounded-full font-bold" style={{ background: "#C6F516", color: "#1A2A5E" }}>
               PORTAL GURU
@@ -112,11 +112,10 @@ export default function TeacherLoginPage() {
               setError(null);
               setSuccessMsg(null);
             }}
-            className={`flex-1 py-2.5 rounded-xl transition flex items-center justify-center gap-2 ${
-              mode === "login"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
+            className={`flex-1 py-2.5 rounded-xl transition flex items-center justify-center gap-2 ${mode === "login"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-800"
+              }`}
           >
             <LogIn className="w-4 h-4" /> Masuk
           </button>
@@ -127,11 +126,10 @@ export default function TeacherLoginPage() {
               setError(null);
               setSuccessMsg(null);
             }}
-            className={`flex-1 py-2.5 rounded-xl transition flex items-center justify-center gap-2 ${
-              mode === "signup"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
+            className={`flex-1 py-2.5 rounded-xl transition flex items-center justify-center gap-2 ${mode === "signup"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-800"
+              }`}
           >
             <UserPlus className="w-4 h-4" /> Buat Akun Baru
           </button>
@@ -187,8 +185,12 @@ export default function TeacherLoginPage() {
           )}
 
           {successMsg && (
-            <div className="rounded-2xl px-4 py-3 font-body text-xs flex items-start gap-2.5" style={{ background: "#F0FFF4", color: "#15803D", border: "1px solid #BBF7D0" }}>
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-green-600" />
+            <div className="rounded-2xl px-4 py-3 font-body text-xs flex items-center gap-2.5" style={{ background: "#F0FFF4", color: "#15803D", border: "1px solid #BBF7D0" }}>
+              {successMsg.includes("Membuka") || successMsg.includes("masuk!") ? (
+                <Loader2 className="w-4 h-4 shrink-0 animate-spin text-green-600" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-green-600" />
+              )}
               <span>{successMsg}</span>
             </div>
           )}
@@ -209,8 +211,8 @@ export default function TeacherLoginPage() {
                 ? "Memeriksa..."
                 : "Mendaftar..."
               : mode === "login"
-              ? "Masuk Dashboard"
-              : "Daftar Akun Guru"}
+                ? "Masuk Dashboard"
+                : "Daftar Akun Guru"}
           </button>
         </form>
 
@@ -224,7 +226,7 @@ export default function TeacherLoginPage() {
             className="flex items-center gap-2 font-body text-xs font-semibold px-4 py-2 rounded-xl transition"
             style={{ color: "#1A2A5E", background: "#E8F5F3" }}
           >
-            <Mail className="w-4 h-4" /> Hubungi Tim Support ThinkTok
+            <Mail className="w-4 h-4" /> Hubungi Tim Support GetCalm
           </a>
         </div>
       </div>
