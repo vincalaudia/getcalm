@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Eye, EyeOff, LogIn, UserPlus, Mail, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, LogIn, UserPlus, Mail, CheckCircle2, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function TeacherLoginPage() {
   const router = useRouter();
@@ -83,12 +84,23 @@ export default function TeacherLoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8" style={{ background: "#F0FAF8" }}>
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative" style={{ background: "#F0FAF8" }}>
       <div
         className="w-full max-w-md bg-white rounded-3xl shadow-xl border p-8 flex flex-col items-center gap-6"
         style={{ borderColor: "#D1F0EB" }}
       >
+
         {/* Brand */}
+
+        <Link
+          href="/"
+          className="self-start flex items-center gap-2 font-body text-xs font-semibold underline"
+          style={{ color: "#1A2A5E" }}
+        >
+          <ArrowLeft className="w-4 h-4" /> Kembali
+        </Link>
+
+
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-display font-extrabold text-3xl" style={{ color: "#1A2A5E" }}>
@@ -198,6 +210,7 @@ export default function TeacherLoginPage() {
             <Mail className="w-4 h-4" /> Hubungi Admin GetCalm
           </a>
         </div>
+
       </div>
     </main>
   );

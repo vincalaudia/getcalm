@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, Star, RefreshCw, Trophy, FileText, Download } from "lucide-react";
+import { CheckCircle2, XCircle, Star, RefreshCw, Trophy, FileText, Download, ArrowLeft } from "lucide-react";
 import { useGameStore, getWatchedSecondsMap, calculatePoints } from "@/hooks/useGameStore";
 import { supabase, updateStudentSessionFinal, saveStudentSession, saveStudentVideoViews, saveStudentQuizAnswers, fetchQuizQuestions } from "@/lib/supabaseClient";
 import type { VideoRow } from "@/lib/types";
@@ -74,10 +74,10 @@ export default function QuizPage() {
 
   // Redirect to home if session data is lost (e.g. reload)
   useEffect(() => {
-    if (!studentName || !classCode) {
+    if (!studentName) {
       router.replace("/");
     }
-  }, [studentName, classCode, router]);
+  }, [studentName, router]);
 
   const [answersLog, setAnswersLog] = useState<{ question_id: number; is_correct: boolean; selected_index: number }[]>([]);
 
@@ -294,7 +294,7 @@ export default function QuizPage() {
         format: [canvas.width / 2, canvas.height / 2]
       });
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
-      pdf.save("laporan-thinktok.pdf");
+      pdf.save("laporan-GetCalm.pdf");
     } catch (e) {
       console.error("Failed to generate PDF", e);
     }
@@ -525,11 +525,22 @@ export default function QuizPage() {
               <div className="m-auto text-slate-500 font-body animate-pulse">Memuat laporan evaluasi...</div>
             ) : (
               <div className="flex flex-col w-full">
+                <button
+                  onClick={() => setPhase("result")}
+                  className="self-start flex items-center gap-2 mb-4 text-slate-500 hover:text-[#1A2A5E] font-body text-sm font-semibold transition bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Kembali
+                </button>
+
                 {/* Printable container */}
                 <div ref={reportRef} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col gap-5 text-left mb-6 shadow-md">
                   <div className="text-center">
                     <h2 className="font-display text-xl font-bold text-[#1A2A5E] mb-1">Laporan Detektif Fakta</h2>
-                    <p className="font-body text-xs text-slate-500">Evaluasi performa selama sesi kamu</p>
+                    <p className="font-body text-xs text-slate-600 mb-1">
+                      Siswa: <span className="font-semibold text-slate-800">{studentName}</span>
+                      {classCode && <span> | Kelas: <span className="font-semibold text-slate-800">{classCode}</span></span>}
+                    </p>
+                    <p className="font-body text-[10px] text-slate-400">Evaluasi performa selama sesi simulasi</p>
                   </div>
 
                   <div className="bg-white rounded-xl p-4 border border-slate-200">
@@ -584,6 +595,18 @@ export default function QuizPage() {
                     </table>
                   </div>
 
+                  <div className="bg-white rounded-xl p-4 border border-slate-200">
+                    <p className="font-display font-extrabold text-lg text-[#1A2A5E] mb-3">Hasil Quiz</p>
+                    <div className="flex justify-between items-center text-sm text-slate-600 py-1 border-b border-slate-100 pb-2 mb-1">
+                      <span>Jawaban Benar</span>
+                      <span className="text-emerald-600 font-bold">{answeredCount}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-slate-600 py-1">
+                      <span>Jawaban Salah</span>
+                      <span className="text-rose-600 font-bold">{questions.length - answeredCount}</span>
+                    </div>
+                  </div>
+
                   {reportData.mostWatchedVideo && (
                     <div className="bg-white rounded-xl p-4 border border-slate-200">
                       <p className="font-display font-bold text-sm text-slate-800 mb-2">Baterai Fokus Terkuras 🔋</p>
@@ -604,9 +627,9 @@ export default function QuizPage() {
                     <Download className="w-5 h-5" />
                     Unduh Laporan (PDF)
                   </button>
-                  <button onClick={handleRestart} className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-body font-semibold text-sm transition-all duration-200 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm">
+                  <button onClick={handleRestart} className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-body font-semibold text-sm transition-all duration-200 bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 shadow-sm mt-2">
                     <RefreshCw className="w-4 h-4" />
-                    Mulai Sesi Baru
+                    Akhiri & Mulai Sesi Baru
                   </button>
                 </div>
               </div>
