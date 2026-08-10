@@ -27,7 +27,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "GetCalm — Jadi Pahlawan Literasi Media Digital",
+  title: "GetCalmer — Jadi Pahlawan Literasi Media Digital",
   description:
     "Simulasi feed video edukatif untuk melatih literasi AI dan deteksi hoaks pada anak-anak.",
   keywords: ["literasi AI", "deteksi hoaks", "edukasi anak", "ThinkTok"],

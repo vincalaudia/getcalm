@@ -130,6 +130,9 @@ export type StudentSessionRow = {
   game_mode: GameMode;
   focus_battery_final: number;
   fact_score_final: number;
+  likes_count: number;
+  likes_correct: number;
+  likes_incorrect: number;
   shares_count: number;
   shares_correct: number;
   shares_incorrect: number;

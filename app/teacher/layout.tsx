@@ -45,7 +45,7 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col" style={{ background: "#F0FAF8", fontFamily: "'Inter', sans-serif" }}>
       <header className="w-full px-6 py-4 flex items-center justify-between border-b" style={{ background: "white", borderColor: "#D1F0EB" }}>
         <div className="flex items-center gap-2">
-          <span className="font-display font-extrabold text-lg" style={{ color: "#1A2A5E" }}>GetCalm</span>
+          <span className="font-display font-extrabold text-lg" style={{ color: "#1A2A5E" }}>GetCalmer</span>
           <span className="font-body text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "#C6F516", color: "#1A2A5E" }}>GURU</span>
         </div>
         <div className="flex items-center gap-4">

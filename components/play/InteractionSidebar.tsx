@@ -7,7 +7,7 @@
  *   - LIKE:     disabled once clicked (likedAt = true). Others still active.
  *   - SHARE:    disabled once clicked (sharedAt = true). Others still active.
  *   - CEK:      gated by quota in HARD mode. Always re-usable in NORMAL.
- *   - LAPORKAN: disabled until hasChecked; also disabled after report submitted.
+ *   - LAPORKAN: disabled after report submitted.
  */
 import { motion } from "framer-motion";
 import { Heart, Send, Search, Flag } from "lucide-react";
@@ -39,7 +39,7 @@ export default function InteractionSidebar({ video, onOpenCek, onOpenLaporkan, o
   const shareDisabled = sharedAt;
   // CEK: permanently disabled after first use (hasChecked), or when quota runs out.
   const cekDisabled = hasChecked || cekQuotaExhausted;
-  const laporkanDisabled = !hasChecked || reportAction !== null;
+  const laporkanDisabled = reportAction !== null;
 
   return (
     <aside className="absolute right-3 bottom-24 z-10 flex flex-col items-center gap-5">
@@ -114,11 +114,11 @@ function SidebarButton({
       }}
     >
       <span
-        className={`w-11 h-11 rounded-full flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5 text-Text-Primary transition-all duration-200 ${glow && !disabled
+        className={`w-11 h-11 rounded-full flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5 text-Text-Primary transition-all duration-200 shadow-lg shadow-black/50 ${glow && !disabled
           ? "bg-Action-Secondary shadow-glow-secondary"
           : done
             ? "bg-Surface-Card-Alt ring-1 ring-white/25"
-            : "bg-Surface-Glass backdrop-blur-md"
+            : "bg-Surface-Glass backdrop-blur-md border border-white/10"
           }`}
       >
         {icon}

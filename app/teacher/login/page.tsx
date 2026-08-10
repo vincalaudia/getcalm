@@ -104,7 +104,7 @@ export default function TeacherLoginPage() {
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="font-display font-extrabold text-3xl" style={{ color: "#1A2A5E" }}>
-              GetCalm
+              GetCalmer
             </span>
             <span className="font-body text-xs px-2.5 py-0.5 rounded-full font-bold" style={{ background: "#C6F516", color: "#1A2A5E" }}>
               PORTAL GURU
@@ -203,11 +203,11 @@ export default function TeacherLoginPage() {
             Belum punya akun? Pendaftaran guru saat ini hanya bisa dilakukan melalui Admin.
           </p>
           <a
-            href="mailto:jovinca.amarissa@gmail.com?subject=Permintaan Akun Guru GetCalm"
+            href="mailto:jovinca.amarissa@gmail.com?subject=Permintaan Akun Guru GetCalmer"
             className="flex items-center gap-2 font-body text-xs font-semibold px-4 py-2 rounded-xl transition"
             style={{ color: "#1A2A5E", background: "#E8F5F3" }}
           >
-            <Mail className="w-4 h-4" /> Hubungi Admin GetCalm
+            <Mail className="w-4 h-4" /> Hubungi Admin GetCalmer
           </a>
         </div>
 

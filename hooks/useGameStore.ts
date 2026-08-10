@@ -132,6 +132,64 @@ interface GameState {
 }
 
 // ---------------------------------------------------------------------------
+// Centralized Stats Calculation
+// ---------------------------------------------------------------------------
+export function calculateStats(videoStates: Record<string, VideoInteractionState>, videos: any[]) {
+  let shares_count = 0, shares_correct = 0, shares_incorrect = 0;
+  let ai_reports_count = 0, ai_reports_correct = 0, ai_reports_incorrect = 0;
+  let hoax_reports_count = 0, hoax_reports_correct = 0, hoax_reports_incorrect = 0;
+  let likes_count = 0, likes_correct = 0, likes_incorrect = 0;
+  let total_correct_actions = 0, total_incorrect_actions = 0;
+
+  (videos || []).forEach(v => {
+    const state = videoStates[v.id];
+    if (!state) return;
+
+    if (state.likedAt) {
+      likes_count++;
+      const pts = calculatePoints(v.category, "LIKE");
+      if (pts > 0) { likes_correct++; total_correct_actions++; }
+      if (pts < 0) { likes_incorrect++; total_incorrect_actions++; }
+    }
+
+    if (state.sharedAt) {
+      shares_count++;
+      const pts = calculatePoints(v.category, "SHARE");
+      if (pts > 0) { shares_correct++; total_correct_actions++; }
+      if (pts < 0) { shares_incorrect++; total_incorrect_actions++; }
+    }
+
+    if (state.reportAction === "REPORT_AI") {
+      ai_reports_count++;
+      const pts = calculatePoints(v.category, "REPORT_AI");
+      if (pts > 0) { ai_reports_correct++; total_correct_actions++; }
+      if (pts < 0) { ai_reports_incorrect++; total_incorrect_actions++; }
+    }
+
+    if (state.reportAction === "REPORT_HOAX") {
+      hoax_reports_count++;
+      const pts = calculatePoints(v.category, "REPORT_HOAX");
+      if (pts > 0) { hoax_reports_correct++; total_correct_actions++; }
+      if (pts < 0) { hoax_reports_incorrect++; total_incorrect_actions++; }
+    }
+  });
+
+  const true_positives = hoax_reports_correct + ai_reports_correct;
+  const true_negatives = likes_correct + shares_correct;
+  const false_positives = hoax_reports_incorrect + ai_reports_incorrect;
+  const false_negatives = likes_incorrect + shares_incorrect;
+
+  return {
+    shares_count, shares_correct, shares_incorrect,
+    ai_reports_count, ai_reports_correct, ai_reports_incorrect,
+    hoax_reports_count, hoax_reports_correct, hoax_reports_incorrect,
+    likes_count, likes_correct, likes_incorrect,
+    total_correct_actions, total_incorrect_actions,
+    true_positives, false_positives, true_negatives, false_negatives
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Store implementation
 // ---------------------------------------------------------------------------
 

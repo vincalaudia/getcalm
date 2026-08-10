@@ -24,6 +24,7 @@ import type { RefObject } from "react";
 import type { VideoRow } from "@/lib/types";
 import { useGameStore } from "@/hooks/useGameStore";
 import InteractionSidebar from "./InteractionSidebar";
+import { Volume2, VolumeX } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────── */
 /*  Constants                                              */
@@ -93,6 +94,7 @@ export default function VideoPlayer({
   const [progress, setProgress] = useState(0);   // 0..1
   const [duration, setDuration] = useState(0);   // seconds
   const [thumbVisible, setThumbVisible] = useState(false); // grows on press
+  const [isMuted, setIsMuted] = useState(false); // start unmuted
 
   /* Refs */
   const videoElRef = useRef<HTMLVideoElement>(null);
@@ -116,7 +118,7 @@ export default function VideoPlayer({
   };
   const youtubeId = getYouTubeId(video.video_url);
   const ytEmbedUrl = youtubeId
-    ? `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&playsinline=1&rel=0&modestbranding=1`
+    ? `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&playsinline=1&rel=0&modestbranding=1`
     : null;
 
   /* ── Viewport / timer wiring ──────────────────────────── */
@@ -249,7 +251,7 @@ export default function VideoPlayer({
           <video
             ref={videoElRef}
             src={video.video_url}
-            muted
+            muted={isMuted}
             loop
             playsInline
             preload="none"          /* Don't load until play() is called */
@@ -278,6 +280,17 @@ export default function VideoPlayer({
         {/* Starfield overlay */}
         <div className="absolute inset-0 pointer-events-none opacity-40 [background-image:radial-gradient(1px_1px_at_20%_30%,white,transparent),radial-gradient(1px_1px_at_70%_60%,white,transparent),radial-gradient(1.5px_1.5px_at_40%_80%,white,transparent),radial-gradient(1px_1px_at_85%_20%,white,transparent)]" />
       </div>
+
+      {/* ── Mute Toggle ── */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsMuted((prev) => !prev);
+        }}
+        className="absolute top-[140px] right-3 z-30 p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition active:scale-95"
+      >
+        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+      </button>
 
       {/* ── Bottom scrim ── */}
       <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-Brand-Deep/90 to-transparent pointer-events-none" />

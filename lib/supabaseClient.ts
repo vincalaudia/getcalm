@@ -164,9 +164,11 @@ export async function createStudentSessionInitial(payload: {
   game_mode: string;
 }) {
   if (!supabaseUrl || !supabaseAnonKey) return null;
-  const { data, error } = await supabase
+  const newId = crypto.randomUUID();
+  const { error } = await supabase
     .from("student_sessions")
     .insert({
+      id: newId,
       student_name: payload.student_name,
       class_code: payload.class_code,
       game_mode: payload.game_mode,
@@ -175,6 +177,9 @@ export async function createStudentSessionInitial(payload: {
       shares_count: 0,
       shares_correct: 0,
       shares_incorrect: 0,
+      likes_count: 0,
+      likes_correct: 0,
+      likes_incorrect: 0,
       ai_reports_count: 0,
       ai_reports_correct: 0,
       ai_reports_incorrect: 0,
@@ -188,14 +193,13 @@ export async function createStudentSessionInitial(payload: {
       quiz_score: 0,
       quiz_correct_count: 0,
       total_score: 0,
-    } as never)
-    .select("id")
-    .single();
+    } as never);
+    
   if (error) {
     console.error("[ThinkTok] Failed to create initial session:", error.message);
     return null;
   }
-  return data as { id: string } | null;
+  return { id: newId };
 }
 
 /**
@@ -210,6 +214,9 @@ export async function updateStudentSessionFinal(
     shares_count: number;
     shares_correct: number;
     shares_incorrect: number;
+    likes_count: number;
+    likes_correct: number;
+    likes_incorrect: number;
     ai_reports_count: number;
     ai_reports_correct: number;
     ai_reports_incorrect: number;
@@ -226,17 +233,16 @@ export async function updateStudentSessionFinal(
   }
 ) {
   if (!supabaseUrl || !supabaseAnonKey) return null;
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("student_sessions")
     .update({ ...payload, completed_at: new Date().toISOString() } as never)
-    .eq("id", sessionId)
-    .select("id")
-    .single();
+    .eq("id", sessionId);
+
   if (error) {
     console.error("[ThinkTok] Failed to update session:", error.message);
     return null;
   }
-  return data as { id: string } | null;
+  return { id: sessionId };
 }
 
 /**
@@ -252,6 +258,9 @@ export async function saveStudentSession(payload: {
   shares_count: number;
   shares_correct: number;
   shares_incorrect: number;
+  likes_count: number;
+  likes_correct: number;
+  likes_incorrect: number;
   ai_reports_count: number;
   ai_reports_correct: number;
   ai_reports_incorrect: number;
@@ -267,16 +276,16 @@ export async function saveStudentSession(payload: {
   total_score: number;
 }) {
   if (!supabaseUrl || !supabaseAnonKey) return null;
-  const { data, error } = await supabase
+  const newId = crypto.randomUUID();
+  const { error } = await supabase
     .from("student_sessions")
-    .insert(payload as never)
-    .select()
-    .single();
+    .insert({ id: newId, ...payload } as never);
+
   if (error) {
     console.error("[ThinkTok] Failed to save student session:", error.message);
     return null;
   }
-  return data as { id: string } | null;
+  return { id: newId };
 }
 
 

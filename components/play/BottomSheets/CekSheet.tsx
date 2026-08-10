@@ -71,7 +71,7 @@ export default function CekSheet({ video, isOpen, onClose }: CekSheetProps) {
     if (!video) return;
     setChoice(option);
     setPhase("explain");
-    // Commit: marks hasChecked = true, decrements HARD quota, unlocks LAPORKAN.
+    // Commit: marks hasChecked = true, decrements HARD quota.
     handleCekInteraction(video.id);
   };
 

@@ -15,12 +15,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Star, RefreshCw, Trophy, FileText, Download, ArrowLeft } from "lucide-react";
-import { useGameStore, getWatchedSecondsMap, calculatePoints } from "@/hooks/useGameStore";
+import { useGameStore, calculateStats, getWatchedSecondsMap } from "@/hooks/useGameStore";
 import { supabase, updateStudentSessionFinal, saveStudentSession, saveStudentVideoViews, saveStudentQuizAnswers, fetchQuizQuestions } from "@/lib/supabaseClient";
 import type { VideoRow } from "@/lib/types";
 import { useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import confetti from "canvas-confetti";
 
 // ---------------------------------------------------------------------------
 // Quiz content
@@ -50,7 +51,7 @@ export default function QuizPage() {
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState(0); // points earned in quiz only
-  const [answeredCount, setAnsweredCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [questionsLoading, setQuestionsLoading] = useState(true);
@@ -137,44 +138,7 @@ export default function QuizPage() {
 
         if (error) throw error;
 
-        let shares_count = 0, shares_correct = 0, shares_incorrect = 0;
-        let ai_reports_count = 0, ai_reports_correct = 0, ai_reports_incorrect = 0;
-        let hoax_reports_count = 0, hoax_reports_correct = 0, hoax_reports_incorrect = 0;
-        let likes_count = 0, likes_correct = 0, likes_incorrect = 0;
-        let total_correct_actions = 0, total_incorrect_actions = 0;
-
-        (videos ?? []).forEach(v => {
-          const state = videoStates[v.id];
-          if (!state) return;
-
-          if (state.likedAt) {
-            likes_count++;
-            const pts = calculatePoints(v.category, "LIKE");
-            if (pts > 0) { likes_correct++; total_correct_actions++; }
-            if (pts < 0) { likes_incorrect++; total_incorrect_actions++; }
-          }
-
-          if (state.sharedAt) {
-            shares_count++;
-            const pts = calculatePoints(v.category, "SHARE");
-            if (pts > 0) { shares_correct++; total_correct_actions++; }
-            if (pts < 0) { shares_incorrect++; total_incorrect_actions++; }
-          }
-
-          if (state.reportAction === "REPORT_AI") {
-            ai_reports_count++;
-            const pts = calculatePoints(v.category, "REPORT_AI");
-            if (pts > 0) { ai_reports_correct++; total_correct_actions++; }
-            if (pts < 0) { ai_reports_incorrect++; total_incorrect_actions++; }
-          }
-
-          if (state.reportAction === "REPORT_HOAX") {
-            hoax_reports_count++;
-            const pts = calculatePoints(v.category, "REPORT_HOAX");
-            if (pts > 0) { hoax_reports_correct++; total_correct_actions++; }
-            if (pts < 0) { hoax_reports_incorrect++; total_incorrect_actions++; }
-          }
-        });
+        const stats = calculateStats(videoStates, videos || []);
 
         const watchMap = getWatchedSecondsMap();
         let maxTime = 0;
@@ -190,12 +154,12 @@ export default function QuizPage() {
         const mostWatched = maxVidId ? (videos ?? []).find(v => v.id === maxVidId) || null : null;
 
         setReportData({
-          totalCorrectActions: total_correct_actions,
-          totalIncorrectActions: total_incorrect_actions,
-          likes: { count: likes_count, correct: likes_correct, incorrect: likes_incorrect },
-          shares: { count: shares_count, correct: shares_correct, incorrect: shares_incorrect },
-          hoaxReports: { count: hoax_reports_count, correct: hoax_reports_correct, incorrect: hoax_reports_incorrect },
-          aiReports: { count: ai_reports_count, correct: ai_reports_correct, incorrect: ai_reports_incorrect },
+          totalCorrectActions: stats.total_correct_actions,
+          totalIncorrectActions: stats.total_incorrect_actions,
+          likes: { count: stats.likes_count, correct: stats.likes_correct, incorrect: stats.likes_incorrect },
+          shares: { count: stats.shares_count, correct: stats.shares_correct, incorrect: stats.shares_incorrect },
+          hoaxReports: { count: stats.hoax_reports_count, correct: stats.hoax_reports_correct, incorrect: stats.hoax_reports_incorrect },
+          aiReports: { count: stats.ai_reports_count, correct: stats.ai_reports_correct, incorrect: stats.ai_reports_incorrect },
           mostWatchedVideo: mostWatched,
           mostWatchedSeconds: maxTime,
           isLoading: false
@@ -203,36 +167,34 @@ export default function QuizPage() {
 
         // Save final stats to Supabase if student entered a class code
         if (classCode && studentName) {
-          const true_positives = hoax_reports_correct + ai_reports_correct;
-          const true_negatives = likes_correct + shares_correct;
-          const false_positives = hoax_reports_incorrect + ai_reports_incorrect;
-          const false_negatives = likes_incorrect + shares_incorrect;
-
           // Use latest quizScore from ref to avoid stale closure
           const latestQuizScore = quizScoreRef.current;
           const totalScoreCalc = currentFactScore + latestQuizScore;
           const finalPayload = {
             focus_battery_final: currentFocusBattery,
             fact_score_final: currentFactScore,
-            shares_count: shares_count,
-            shares_correct: shares_correct,
-            shares_incorrect: shares_incorrect,
-            ai_reports_count: ai_reports_count,
-            ai_reports_correct: ai_reports_correct,
-            ai_reports_incorrect: ai_reports_incorrect,
-            hoax_reports_count: hoax_reports_count,
-            hoax_reports_correct: hoax_reports_correct,
-            hoax_reports_incorrect: hoax_reports_incorrect,
-            total_correct_actions: total_correct_actions,
-            total_incorrect_actions: total_incorrect_actions,
-            true_positives,
-            false_positives,
-            true_negatives,
-            false_negatives,
+            likes_count: stats.likes_count,
+            likes_correct: stats.likes_correct,
+            likes_incorrect: stats.likes_incorrect,
+            shares_count: stats.shares_count,
+            shares_correct: stats.shares_correct,
+            shares_incorrect: stats.shares_incorrect,
+            ai_reports_count: stats.ai_reports_count,
+            ai_reports_correct: stats.ai_reports_correct,
+            ai_reports_incorrect: stats.ai_reports_incorrect,
+            hoax_reports_count: stats.hoax_reports_count,
+            hoax_reports_correct: stats.hoax_reports_correct,
+            hoax_reports_incorrect: stats.hoax_reports_incorrect,
+            total_correct_actions: stats.total_correct_actions,
+            total_incorrect_actions: stats.total_incorrect_actions,
+            true_positives: stats.true_positives,
+            false_positives: stats.false_positives,
+            true_negatives: stats.true_negatives,
+            false_negatives: stats.false_negatives,
             most_watched_video_id: maxVidId,
             most_watched_seconds: maxTime,
             quiz_score: latestQuizScore,
-            quiz_correct_count: answeredCount, // Since quiz is not retakable, answeredCount is correct count
+            quiz_correct_count: correctCount,
             total_score: totalScoreCalc,
           };
 
@@ -283,6 +245,19 @@ export default function QuizPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // Trigger confetti when entering result phase
+  useEffect(() => {
+    if (phase === "result") {
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.5 },
+        zIndex: 100,
+        colors: ['#A4D037', '#54C0C7', '#FFB3C1', '#FCD34D']
+      });
+    }
+  }, [phase]);
+
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return;
     try {
@@ -294,7 +269,7 @@ export default function QuizPage() {
         format: [canvas.width / 2, canvas.height / 2]
       });
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
-      pdf.save("laporan-GetCalm.pdf");
+      pdf.save("laporan-GetCalmer.pdf");
     } catch (e) {
       console.error("Failed to generate PDF", e);
     }
@@ -310,7 +285,7 @@ export default function QuizPage() {
     const correct = idx === currentQ.correct_index;
     if (correct) {
       setQuizScore((prev) => prev + 10);
-      setAnsweredCount((prev) => prev + 1);
+      setCorrectCount((prev) => prev + 1);
     }
     setAnswersLog((prev) => [...prev, { question_id: currentQ.id, is_correct: correct, selected_index: idx }]);
   };
@@ -353,6 +328,24 @@ export default function QuizPage() {
       </div>
 
       {/* ── QUIZ PHASE ── */}
+      {phase === "quiz" && !questionsLoading && questions.length > 0 && (
+        <div className="px-5 pt-5 pb-2">
+          {/* Progress */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+              <motion.div
+                className="h-full bg-[#54C0C7] rounded-full"
+                animate={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+              />
+            </div>
+            <span className="font-body text-slate-500 text-xs tabular-nums shrink-0 font-bold">
+              {currentQIndex + 1}/{questions.length}
+            </span>
+          </div>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         {phase === "quiz" && questionsLoading && (
           <motion.div
@@ -368,27 +361,12 @@ export default function QuizPage() {
         {phase === "quiz" && !questionsLoading && questions.length > 0 && currentQ && (
           <motion.div
             key={`q-${currentQIndex}`}
-            className="relative z-10 flex-1 flex flex-col px-5 pt-5 pb-6 overflow-y-auto"
+            className="relative z-10 flex-1 flex flex-col px-5 pt-2 pb-6 overflow-y-auto"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.25 }}
           >
-            {/* Progress */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                <motion.div
-                  className="h-full bg-[#54C0C7] rounded-full"
-                  animate={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
-                  transition={{ duration: 0.4 }}
-                />
-              </div>
-              <span className="font-body text-slate-500 text-xs tabular-nums shrink-0 font-bold">
-                {currentQIndex + 1}/{questions.length}
-              </span>
-            </div>
-
-
             {/* Question */}
             <div className="rounded-3xl bg-white border-2 border-[#54C0C7] p-5 mb-6 text-center shadow-sm">
               <p className="font-display font-bold text-[#67AEB3] text-[11px] uppercase mb-2 tracking-wider">
@@ -491,7 +469,7 @@ export default function QuizPage() {
             {/* Score breakdown */}
             <div className="w-full rounded-2xl bg-slate-50 border border-slate-200 p-5 flex flex-col gap-3">
               <ScoreRow label="Skor Simulasi" value={currentFactScore} color="text-rose-500" />
-              <ScoreRow label={`Kuis (${answeredCount} benar dari ${questions.length})`} value={quizScore} color="text-emerald-500" />
+              <ScoreRow label={`Kuis (${correctCount} benar dari ${questions.length})`} value={quizScore} color="text-emerald-500" />
               <div className="h-px bg-slate-200" />
               <ScoreRow label="Total Skor Fakta" value={totalScore} color="text-amber-500" large />
             </div>
@@ -599,11 +577,11 @@ export default function QuizPage() {
                     <p className="font-display font-extrabold text-lg text-[#1A2A5E] mb-3">Hasil Quiz</p>
                     <div className="flex justify-between items-center text-sm text-slate-600 py-1 border-b border-slate-100 pb-2 mb-1">
                       <span>Jawaban Benar</span>
-                      <span className="text-emerald-600 font-bold">{answeredCount}</span>
+                      <span className="text-emerald-600 font-bold">{correctCount}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-slate-600 py-1">
                       <span>Jawaban Salah</span>
-                      <span className="text-rose-600 font-bold">{questions.length - answeredCount}</span>
+                      <span className="text-rose-600 font-bold">{questions.length - correctCount}</span>
                     </div>
                   </div>
 
@@ -613,10 +591,22 @@ export default function QuizPage() {
                       <p className="font-body text-[11px] text-slate-500 mb-3 leading-relaxed">
                         Kamu menghabiskan <strong>{reportData.mostWatchedSeconds} detik</strong> menganalisis video ini:
                       </p>
-                      <div className="bg-slate-100 border border-slate-200 p-3 rounded-lg">
-                        <p className="text-xs text-slate-600 line-clamp-3 italic leading-relaxed">
-                          "{reportData.mostWatchedVideo.caption}"
-                        </p>
+                      <div className="flex gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl overflow-hidden">
+                        <div className="w-24 aspect-[9/16] shrink-0 rounded-md overflow-hidden bg-black relative shadow-sm">
+                          <video
+                            src={reportData.mostWatchedVideo.video_url}
+                            className="w-full h-full object-contain"
+                            preload="metadata"
+                            controls
+                            playsInline
+                          />
+                        </div>
+                        <div className="flex-1 flex flex-col justify-center">
+                          <p className="text-[12px] font-bold text-slate-800 mb-1">@{reportData.mostWatchedVideo.author_username}</p>
+                          <p className="text-[11px] text-slate-600 line-clamp-3 italic leading-relaxed">
+                            "{reportData.mostWatchedVideo.caption}"
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}

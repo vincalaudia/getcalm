@@ -22,7 +22,10 @@ import {
   Lightbulb,
   Copy,
   Check,
-  Maximize2
+  Maximize2,
+  Battery,
+  BookOpen,
+  Search
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { StudentSessionRow, ClassRow, VideoRow, QuizQuestionRow } from "@/lib/types";
@@ -35,6 +38,7 @@ interface VideoStat {
   video_url?: string;
   author_username?: string;
   category?: string;
+  caption?: string;
   total_secs: number;
   avg_secs: number;
 }
@@ -51,6 +55,8 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
     question_id: number;
     question_text: string;
     incorrect_count: number;
+    correct_count: number;
+    correct_index: number;
     options: string[];
     selected_distribution: Record<number, number>;
   }[]>([]);
@@ -97,6 +103,7 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
       video_url: vMap[vid]?.video_url,
       author_username: vMap[vid]?.author_username,
       category: vMap[vid]?.category,
+      caption: vMap[vid]?.caption,
       total_secs: data.total_secs,
       avg_secs: Math.round(data.total_secs / (sessionList.length || 1)),
     }));
@@ -110,28 +117,36 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
       qMap[q.id] = q;
     });
 
-    const missedMap: Record<number, { incorrect_count: number; selected_distribution: Record<number, number> }> = {};
-    ((qAnswers as unknown as { question_id: number; is_correct: boolean; selected_index: number | null }[]) ?? []).forEach(a => {
-      if (!a.is_correct) {
-        if (!missedMap[a.question_id]) {
-          missedMap[a.question_id] = { incorrect_count: 0, selected_distribution: {} };
-        }
-        missedMap[a.question_id].incorrect_count += 1;
-        if (a.selected_index != null) {
-          missedMap[a.question_id].selected_distribution[a.selected_index] = (missedMap[a.question_id].selected_distribution[a.selected_index] || 0) + 1;
-        }
-      }
-    });
+    const qs: typeof quizStats = Object.values(qMap).map(q => {
+      let incorrect_count = 0;
+      let correct_count = 0;
+      const selected_distribution: Record<number, number> = {};
 
-    const qs: typeof quizStats = Object.entries(missedMap).map(([qId, data]) => ({
-      question_id: Number(qId),
-      question_text: qMap[Number(qId)]?.question || "Unknown Question",
-      options: qMap[Number(qId)]?.options || [],
-      incorrect_count: data.incorrect_count,
-      selected_distribution: data.selected_distribution
-    }));
+      ((qAnswers as unknown as { question_id: number; is_correct: boolean; selected_index: number | null }[]) ?? []).forEach(a => {
+        if (a.question_id === q.id) {
+          if (!a.is_correct) {
+            incorrect_count += 1;
+            if (a.selected_index != null) {
+              selected_distribution[a.selected_index] = (selected_distribution[a.selected_index] || 0) + 1;
+            }
+          } else {
+            correct_count += 1;
+          }
+        }
+      });
+
+      return {
+        question_id: q.id,
+        question_text: q.question,
+        options: q.options,
+        correct_index: q.correct_index,
+        incorrect_count,
+        correct_count,
+        selected_distribution
+      };
+    });
     qs.sort((a, b) => b.incorrect_count - a.incorrect_count);
-    setQuizStats(qs.slice(0, 3)); // top 3
+    setQuizStats(qs);
 
     setLastUpdated(new Date());
     setIsLoading(false);
@@ -230,10 +245,30 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
 
   const accuracy = totalDecisions > 0 ? Math.round((totalCorrect / totalDecisions) * 100) : 0;
 
-  const sortedLeaderboard = [...sessions].sort((a, b) => b.fact_score_final - a.fact_score_final);
-  const top3FactStudents = [...sessions].sort((a, b) => b.fact_score_final - a.fact_score_final).slice(0, 3);
-  const top3LongestVideos = videoStats.slice(0, 3);
-  const top3ShortestVideos = [...videoStats].reverse().slice(0, 3);
+  const sortedLeaderboard = [...sessions].sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
+  const top3FactStudents = [...sessions].sort((a, b) => (b.total_score || 0) - (a.total_score || 0)).slice(0, 3);
+  const top4LongestVideos = videoStats.slice(0, 4);
+
+  const statLikes = {
+    correct: sessions.reduce((s, r) => s + (r.likes_correct || 0), 0),
+    incorrect: sessions.reduce((s, r) => s + (r.likes_incorrect || 0), 0),
+    total: sessions.reduce((s, r) => s + (r.likes_count || 0), 0),
+  };
+  const statShares = {
+    correct: sessions.reduce((s, r) => s + (r.shares_correct || 0), 0),
+    incorrect: sessions.reduce((s, r) => s + (r.shares_incorrect || 0), 0),
+    total: sessions.reduce((s, r) => s + (r.shares_count || 0), 0),
+  };
+  const statHoax = {
+    correct: sessions.reduce((s, r) => s + (r.hoax_reports_correct || 0), 0),
+    incorrect: sessions.reduce((s, r) => s + (r.hoax_reports_incorrect || 0), 0),
+    total: sessions.reduce((s, r) => s + (r.hoax_reports_count || 0), 0),
+  };
+  const statAI = {
+    correct: sessions.reduce((s, r) => s + (r.ai_reports_correct || 0), 0),
+    incorrect: sessions.reduce((s, r) => s + (r.ai_reports_incorrect || 0), 0),
+    total: sessions.reduce((s, r) => s + (r.ai_reports_count || 0), 0),
+  };
 
   const highBatteryCount = sessions.filter((s) => s.focus_battery_final >= 60).length;
   const medBatteryCount = sessions.filter((s) => s.focus_battery_final >= 30 && s.focus_battery_final < 60).length;
@@ -351,9 +386,9 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { icon: <Trophy className="w-5 h-5" />, label: "Rata-rata Total Skor", value: avg("total_score"), bg: "#C6F516", fg: "#1A2A5E" },
-              { icon: <Target className="w-5 h-5" />, label: "Rata-rata Interaksi Benar", value: avg("total_correct_actions"), bg: "#50B8A5", fg: "white" },
-              { icon: <Heart className="w-5 h-5" />, label: "Total Interaksi Share", value: sessions.reduce((s, r) => s + r.shares_count, 0), bg: "#FFB3C1", fg: "#1A2A5E" },
-              { icon: <AlertTriangle className="w-5 h-5" />, label: "Laporan Hoaks Dilakukan", value: sessions.reduce((s, r) => s + r.hoax_reports_count, 0), bg: "#1A2A5E", fg: "white" },
+              { icon: <Battery className="w-5 h-5" />, label: "Rata-rata Batere", value: `${avg("focus_battery_final")}%`, bg: "#50B8A5", fg: "white" },
+              { icon: <BookOpen className="w-5 h-5" />, label: "Rata-rata Nilai Kuis", value: avg("quiz_score"), bg: "#FFB3C1", fg: "#1A2A5E" },
+              { icon: <Search className="w-5 h-5" />, label: "Rata-rata Skor Fakta", value: avg("fact_score_final"), bg: "#1A2A5E", fg: "white" },
             ].map((card) => (
               <div key={card.label} className="rounded-2xl p-4 flex flex-col gap-1.5" style={{ background: card.bg }}>
                 <div style={{ color: card.fg }}>{card.icon}</div>
@@ -382,7 +417,7 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr style={{ background: "#F0FAF8" }}>
-                      {["Nama Siswa", "Mode", "Total Skor", "Nilai Kuis", "Benar", "Salah", "🔋 Batere", "Waktu Selesai"].map((h) => (
+                      {["Nama Siswa", "Mode", "Skor Fakta", "Total Skor", "Nilai Kuis", "Benar", "Salah", "🔋 Batere", "Waktu Selesai"].map((h) => (
                         <th key={h} className="px-4 py-3.5 font-display font-bold text-xs whitespace-nowrap" style={{ color: "#1A2A5E" }}>{h}</th>
                       ))}
                     </tr>
@@ -397,8 +432,11 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
                               {s.game_mode}
                             </span>
                           </td>
+                          <td className="px-4 py-3.5 font-display font-bold text-base text-slate-600">{s.fact_score_final}</td>
                           <td className="px-4 py-3.5 font-display font-extrabold text-base" style={{ color: "#50B8A5" }}>{s.total_score}</td>
-                          <td className="px-4 py-3.5 font-display font-bold text-slate-700">{s.quiz_score}</td>
+                          <td className="px-4 py-3.5 font-display font-bold text-slate-700">
+                            {s.quiz_score}
+                          </td>
                           <td className="px-4 py-3.5 font-body text-emerald-600 font-bold">{s.total_correct_actions}</td>
                           <td className="px-4 py-3.5 font-body text-rose-500 font-bold">{s.total_incorrect_actions}</td>
                           <td className="px-4 py-3.5 font-body font-semibold " style={{ color: "#1A2A5E" }}>{s.focus_battery_final}%</td>
@@ -454,6 +492,8 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
                     <th className="px-4 py-3 font-display font-bold">Peringkat</th>
                     <th className="px-4 py-3 font-display font-bold">Nama Siswa</th>
                     <th className="px-4 py-3 font-display font-bold text-right">Skor Fakta</th>
+                    <th className="px-4 py-3 font-display font-bold text-right">Skor Kuis</th>
+                    <th className="px-4 py-3 font-display font-bold text-right">Total Skor</th>
                     <th className="px-4 py-3 font-display font-bold text-right">Batere Fokus</th>
                   </tr>
                 </thead>
@@ -476,6 +516,8 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
                           )}
                         </td>
                         <td className="px-4 py-3.5 font-display font-extrabold text-teal-300 text-right">{session.fact_score_final}</td>
+                        <td className="px-4 py-3.5 font-display font-extrabold text-indigo-300 text-right">{session.quiz_score}</td>
+                        <td className="px-4 py-3.5 font-display font-extrabold text-amber-300 text-right">{session.total_score}</td>
                         <td className={`px-4 py-3.5 font-body font-bold ${batColor} text-right`}>{bat}%</td>
                       </tr>
                     );
@@ -513,15 +555,18 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
             </div>
 
             <div className="bg-white p-5 rounded-2xl border flex flex-col gap-1 shadow-sm" style={{ borderColor: "#D1F0EB" }}>
-              <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Rata-rata Nilai Kuis</span>
+              <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Rata-rata
+
+              </span>
               <span className="font-display font-extrabold text-3xl text-indigo-600">{avg("quiz_score")}</span>
-              <span className="text-xs text-slate-400 font-medium">Pemahaman teori literasi</span>
+              <span className="text-xs text-slate-400 font-medium">Dari kuis teori dasar</span>
             </div>
           </div>
 
           {/* Peta Literasi Digital */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col">
+          {/* Peta Literasi Digital & Diagnosis Kesalahan Siswa (Merged Box) */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-8">
+            <div className="flex-1 flex flex-col">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-indigo-600" />
                 <h2 className="font-display font-bold text-lg text-slate-900">
@@ -556,16 +601,18 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-4">
+            <div className="flex-1 flex flex-col gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-8">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5 text-slate-900" />
                 <h2 className="font-display font-bold text-lg text-slate-900">
-                  Diagnosis Kesalahan Siswa
+                  Fokus Perbaikan
                 </h2>
               </div>
+              
+              <p className="text-xs text-slate-500 mb-2">Area ini menunjukkan kesalahan umum yang paling sering dilakukan siswa selama simulasi.</p>
 
               <div className="flex flex-col gap-3 flex-1 justify-center">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-start gap-3">
+                <div className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 flex items-start gap-3">
                   <span className="text-2xl mt-0.5">🎣</span>
                   <div>
                     <p className="font-display font-bold text-sm text-rose-700">Mudah Terkecoh (Gullible)</p>
@@ -575,7 +622,7 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
                   </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-start gap-3">
+                <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100 flex items-start gap-3">
                   <span className="text-2xl mt-0.5">🛡️</span>
                   <div>
                     <p className="font-display font-bold text-sm text-amber-700">Terlalu Curiga (Paranoid)</p>
@@ -588,26 +635,52 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
             </div>
           </div>
 
-          {/* Video Ranking & Battery Matrix */}
+          {/* Statistik Interaksi & Battery Matrix */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Video watch duration */}
+            
+            {/* Statistik Interaksi Table */}
             <div className="bg-white rounded-3xl p-6 border flex flex-col gap-4 shadow-sm" style={{ borderColor: "#D1F0EB" }}>
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-600" />
-                <h2 className="font-display font-bold text-lg text-slate-900">Analisis Durasi Tontonan Video</h2>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="font-display font-black text-2xl text-[#1A2A5E]">Statistik Interaksi 📱</h2>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <h3 className="font-display font-semibold text-xs text-slate-500 uppercase">🔥 Top 3 Paling Lama Ditonton</h3>
-                {top3LongestVideos.map((v, i) => (
-                  <div key={v.video_id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-bold text-teal-700 block">#{i + 1} {v.author_username || v.video_id}</span>
-                      <span className="text-[11px] text-slate-500">{v.category || "Video"}</span>
-                    </div>
-                    <span className="font-display font-bold text-sm text-slate-900">{v.avg_secs}s</span>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm font-body">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="py-2"></th>
+                      <th className="py-2 text-center text-emerald-600 font-bold">Benar</th>
+                      <th className="py-2 text-center text-rose-600 font-bold">Salah</th>
+                      <th className="py-2 text-center text-slate-500 font-bold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    <tr>
+                      <td className="py-3 text-slate-600">Video Disukai</td>
+                      <td className="py-3 text-center font-bold text-emerald-600">{statLikes.correct}</td>
+                      <td className="py-3 text-center font-bold text-rose-600">{statLikes.incorrect}</td>
+                      <td className="py-3 text-center font-bold text-slate-900">{statLikes.total}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 text-slate-600">Video Dibagikan</td>
+                      <td className="py-3 text-center font-bold text-emerald-600">{statShares.correct}</td>
+                      <td className="py-3 text-center font-bold text-rose-600">{statShares.incorrect}</td>
+                      <td className="py-3 text-center font-bold text-slate-900">{statShares.total}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 text-slate-600">Laporkan Hoaks</td>
+                      <td className="py-3 text-center font-bold text-emerald-600">{statHoax.correct}</td>
+                      <td className="py-3 text-center font-bold text-rose-600">{statHoax.incorrect}</td>
+                      <td className="py-3 text-center font-bold text-slate-900">{statHoax.total}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 text-slate-600">Laporkan AI Palsu</td>
+                      <td className="py-3 text-center font-bold text-emerald-600">{statAI.correct}</td>
+                      <td className="py-3 text-center font-bold text-rose-600">{statAI.incorrect}</td>
+                      <td className="py-3 text-center font-bold text-slate-900">{statAI.total}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -618,7 +691,7 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
                 <h2 className="font-display font-bold text-lg text-slate-900">Matriks Energi Baterai Fokus</h2>
               </div>
 
-              <div className="space-y-3 mt-1">
+              <div className="space-y-3 mt-1 flex-1 justify-center flex flex-col">
                 <div>
                   <div className="flex justify-between text-xs font-semibold mb-1">
                     <span className="text-emerald-700">Fokus Tinggi (≥ 60%)</span>
@@ -652,38 +725,98 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
             </div>
           </div>
 
-          {/* Top 3 Quiz Mistakes */}
+          {/* Video watch duration (Full Width) */}
+          <div className="bg-white rounded-3xl p-6 border flex flex-col gap-4 shadow-sm" style={{ borderColor: "#D1F0EB" }}>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" />
+              <h2 className="font-display font-bold text-lg text-slate-900">Analisis Durasi Tontonan Video</h2>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h3 className="font-display font-semibold text-xs text-slate-500 uppercase">🔥 Top 4 Paling Lama Ditonton</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1">
+                {top4LongestVideos.map((v, i) => (
+                  <div key={v.video_id} className={`p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-3`}>
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs font-bold text-teal-700 line-clamp-1">#{i + 1} @{v.author_username || v.video_id}</span>
+                      <span className="font-display font-bold text-sm text-slate-900 shrink-0">{v.avg_secs}s</span>
+                    </div>
+
+                    <div className="w-full aspect-[9/16] rounded-md overflow-hidden bg-black relative shadow-sm">
+                      {v.video_url && (
+                        <video
+                          src={v.video_url}
+                          className="w-full h-full object-contain"
+                          preload="metadata"
+                          controls
+                          playsInline
+                        />
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] font-semibold text-slate-500 inline-block">{v.category || "Video"}</span>
+                      <p className="text-[11px] text-slate-600 line-clamp-2 italic leading-relaxed">
+                        "{v.caption}"
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Analisis Hasil Kuis */}
           {quizStats.length > 0 && (
             <div className="bg-white rounded-3xl p-6 border flex flex-col gap-4 shadow-sm" style={{ borderColor: "#D1F0EB" }}>
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-rose-500" />
-                <h2 className="font-display font-bold text-lg text-slate-900">Top 3 Kesalahan Kuis</h2>
+                <ShieldAlert className="w-5 h-5 text-indigo-500" />
+                <h2 className="font-display font-bold text-lg text-slate-900">Analisis Hasil Kuis</h2>
               </div>
-              <p className="text-sm text-slate-500 mb-2">Pertanyaan kuis yang paling sering dijebak oleh siswa beserta pola opsi jawaban yang dipilih.</p>
+              <p className="text-sm text-slate-500 mb-2">Seluruh pertanyaan kuis diurutkan berdasarkan jumlah kesalahan terbanyak. Terdapat informasi jawaban benar dan pola kesalahan siswa.</p>
 
               <div className="flex flex-col gap-4">
                 {quizStats.map((q, idx) => {
                   const totalMistakesForQ = q.incorrect_count;
+                  const totalAnswersForQ = totalMistakesForQ + q.correct_count;
+                  const correctPercentage = totalAnswersForQ > 0 ? Math.round((q.correct_count / totalAnswersForQ) * 100) : 0;
+
                   return (
                     <div key={q.question_id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col gap-3">
                       <div className="flex items-start gap-3">
-                        <span className="flex items-center justify-center bg-rose-100 text-rose-700 font-bold w-6 h-6 rounded-full text-xs shrink-0">
+                        <span className={`flex items-center justify-center font-bold w-6 h-6 rounded-full text-xs shrink-0 ${totalMistakesForQ > 0 ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"}`}>
                           {idx + 1}
                         </span>
                         <div>
                           <p className="font-display font-bold text-sm text-slate-900 leading-snug">{q.question_text}</p>
-                          <p className="text-xs text-rose-600 font-semibold mt-1">{totalMistakesForQ} siswa salah menjawab</p>
+                          {totalMistakesForQ > 0 ? (
+                            <p className="text-xs text-rose-600 font-semibold mt-1">{totalMistakesForQ} siswa salah menjawab</p>
+                          ) : (
+                            <p className="text-xs text-emerald-600 font-semibold mt-1">Semua siswa menjawab benar! 🎉</p>
+                          )}
                         </div>
                       </div>
 
                       <div className="pl-9 flex flex-col gap-2 mt-1">
-                        {Object.entries(q.selected_distribution).map(([optIdxStr, count]) => {
+                        {/* Show Correct Answer */}
+                        <div className="flex flex-col gap-1 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Jawaban Benar</span>
+                            {totalAnswersForQ > 0 && (
+                              <span className="text-[10px] font-bold text-emerald-700">{correctPercentage}% ({q.correct_count})</span>
+                            )}
+                          </div>
+                          <span className="text-[12px] font-semibold text-emerald-900">"{q.options[q.correct_index]}"</span>
+                        </div>
+
+                        {/* Show Mistakes if any */}
+                        {totalMistakesForQ > 0 && Object.entries(q.selected_distribution).map(([optIdxStr, count]) => {
                           const optIdx = parseInt(optIdxStr);
-                          const percentage = Math.round((count / totalMistakesForQ) * 100);
+                          const percentage = Math.round((count / totalAnswersForQ) * 100);
                           return (
-                            <div key={optIdx} className="flex flex-col gap-1">
+                            <div key={optIdx} className="flex flex-col gap-1 mt-1">
                               <div className="flex justify-between text-[11px] font-semibold text-slate-600">
-                                <span className="line-clamp-1 flex-1 pr-2">"{q.options[optIdx] || "Opsi tidak diketahui"}"</span>
+                                <span className="line-clamp-1 flex-1 pr-2">Jawab: "{q.options[optIdx] || "Opsi tidak diketahui"}"</span>
                                 <span>{percentage}% ({count})</span>
                               </div>
                               <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -731,8 +864,8 @@ export default function ClassDetailPage({ params }: { params: { code: string } }
               <div className="bg-white/10 backdrop-blur rounded-2xl p-4 border border-white/10">
                 <p className="font-display font-bold text-sm text-amber-300 mb-1">3. Bahan Diskusi Kelas</p>
                 <p className="text-xs text-slate-200 leading-relaxed">
-                  {top3LongestVideos.length > 0
-                    ? `Video "${top3LongestVideos[0]?.author_username || top3LongestVideos[0]?.video_id}" paling banyak menyita perhatian (${top3LongestVideos[0]?.avg_secs}s). Cocok dijadikan bahan diskusi bersama.`
+                  {top4LongestVideos.length > 0
+                    ? `Video "${top4LongestVideos[0]?.author_username || top4LongestVideos[0]?.video_id}" paling banyak menyita perhatian (${top4LongestVideos[0]?.avg_secs}s). Cocok dijadikan bahan diskusi bersama.`
                     : "Data tontonan sedang dikumpulkan."}
                 </p>
               </div>
