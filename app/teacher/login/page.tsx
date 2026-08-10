@@ -99,41 +99,10 @@ export default function TeacherLoginPage() {
             </span>
           </div>
           <p className="font-body text-sm text-center" style={{ color: "#6B7A99" }}>
-            Dasbor guru untuk memantau progres & keakuratan siswa
+            Dasbor guru untuk memantau hasil siswa
           </p>
         </div>
 
-        {/* Tab Switcher: Login vs Sign Up */}
-        <div className="flex w-full bg-slate-100 p-1 rounded-2xl border border-slate-200 text-sm font-semibold">
-          <button
-            type="button"
-            onClick={() => {
-              setMode("login");
-              setError(null);
-              setSuccessMsg(null);
-            }}
-            className={`flex-1 py-2.5 rounded-xl transition flex items-center justify-center gap-2 ${mode === "login"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-500 hover:text-slate-800"
-              }`}
-          >
-            <LogIn className="w-4 h-4" /> Masuk
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode("signup");
-              setError(null);
-              setSuccessMsg(null);
-            }}
-            className={`flex-1 py-2.5 rounded-xl transition flex items-center justify-center gap-2 ${mode === "signup"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-500 hover:text-slate-800"
-              }`}
-          >
-            <UserPlus className="w-4 h-4" /> Buat Akun Baru
-          </button>
-        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
@@ -218,15 +187,15 @@ export default function TeacherLoginPage() {
 
         {/* Support contact link */}
         <div className="w-full pt-4 border-t flex flex-col items-center gap-2" style={{ borderColor: "#E8F5F3" }}>
-          <p className="font-body text-xs" style={{ color: "#6B7A99" }}>
-            Butuh bantuan atau pertanyaan?
+          <p className="font-body text-xs text-center" style={{ color: "#6B7A99" }}>
+            Belum punya akun? Pendaftaran guru saat ini hanya bisa dilakukan melalui Admin.
           </p>
           <a
-            href="mailto:admin@thinktok.id?subject=Bantuan Akun Guru ThinkTok"
+            href="mailto:jovinca.amarissa@gmail.com?subject=Permintaan Akun Guru GetCalm"
             className="flex items-center gap-2 font-body text-xs font-semibold px-4 py-2 rounded-xl transition"
             style={{ color: "#1A2A5E", background: "#E8F5F3" }}
           >
-            <Mail className="w-4 h-4" /> Hubungi Tim Support GetCalm
+            <Mail className="w-4 h-4" /> Hubungi Admin GetCalm
           </a>
         </div>
       </div>

@@ -7,6 +7,7 @@
  * Content flows from the top (not vertically centred) to match the reference design.
  */
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -184,15 +185,21 @@ export default function WelcomePage() {
         </motion.div>
       </motion.div>
 
-      {/* Footer tagline */}
-      <motion.p
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 font-body text-[9px] font-semibold text-black text-center w-full px-8 whitespace-nowrap"
+      {/* Footer tagline & Teacher Access */}
+      <motion.div
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 w-full px-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.65 }}
       >
-        Belajar Menghindari Hoax
-      </motion.p>
+        <Link
+          href="/teacher/login"
+          className="font-display text-[11px] font-bold text-[#1A2A5E] transition px-4 py-1.5 rounded-full shadow-sm mt-1"
+          style={{ background: "#C6F516", border: "1px solid #8CBE11" }}
+        >
+          Akses Portal Guru
+        </Link>
+      </motion.div>
     </main>
   );
 }
