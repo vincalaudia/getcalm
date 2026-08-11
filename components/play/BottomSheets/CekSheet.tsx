@@ -20,7 +20,7 @@
  *  → LAPORKAN unlocked
  *  → CEK button permanently disabled for this video (cekDisabled = hasChecked)
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Sparkles, ChevronLeft, ImageOff } from "lucide-react";
 import type { VideoRow } from "@/lib/types";
@@ -65,7 +65,12 @@ const CHOICE_CONFIG = {
 export default function CekSheet({ video, isOpen, onClose }: CekSheetProps) {
   const [phase, setPhase] = useState<Phase>("choose");
   const [choice, setChoice] = useState<CekChoice | null>(null);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const handleCekInteraction = useGameStore((s) => s.handleCekInteraction);
+
+  useEffect(() => {
+    setImgLoaded(false);
+  }, [video?.id, choice]);
 
   const handleChoose = (option: CekChoice) => {
     if (!video) return;
@@ -170,14 +175,18 @@ export default function CekSheet({ video, isOpen, onClose }: CekSheetProps) {
             {/* 3:4 portrait image — shown only when imageUrl is set */}
             {content.imageUrl ? (
               <div
-                className="mx-auto rounded-2xl overflow-hidden mb-4"
+                className="mx-auto rounded-2xl overflow-hidden mb-4 relative bg-slate-100"
                 style={{ width: "180px", aspectRatio: "3 / 4" }}
               >
+                {!imgLoaded && (
+                  <div className="absolute inset-0 bg-slate-200 animate-pulse rounded-2xl" />
+                )}
                 <img
                   src={content.imageUrl}
                   alt={cfg.label}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
                   loading="lazy"
+                  onLoad={() => setImgLoaded(true)}
                 />
               </div>
             ) : null}

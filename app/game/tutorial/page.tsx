@@ -212,7 +212,7 @@ function Slide1() {
         <p className="font-display text-[13px]" style={{ color: "#4a6fa5" }}>🎯 Misi Kita Bareng:</p>
         <Bullet icon="✅" text="Like dan bagikan berita yang benar ke Tita, temanku!" />
         <Bullet icon="🚨" text="Laporkan konten hoaks atau yang dibuat AI palsu" />
-        <Bullet icon="⭐" text="Kumpulkan Skor Fakta setinggi mungkin! Semakin banyak aksi yang benar, semakin tinggi skormu!" />
+        <Bullet icon="⭐" text="Kumpulkan Skor Total setinggi mungkin dari skor fakta dan kuis! Semakin banyak aksi yang benar, semakin tinggi skormu!" />
       </InfoCard>
     </div>
   );

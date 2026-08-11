@@ -58,7 +58,30 @@ export default function QuizPage() {
 
   useEffect(() => {
     fetchQuizQuestions().then(qs => {
-      setQuestions(qs);
+      // Shuffle the order of the questions
+      const shuffledQs = [...qs];
+      for (let i = shuffledQs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledQs[i], shuffledQs[j]] = [shuffledQs[j], shuffledQs[i]];
+      }
+
+      // Shuffle the options of each question and update the correct_index
+      const processedQs = shuffledQs.map((q) => {
+        const correctAnswer = q.options[q.correct_index];
+        const shuffledOptions = [...q.options];
+        for (let i = shuffledOptions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+        }
+        const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+        return {
+          ...q,
+          options: shuffledOptions,
+          correct_index: newCorrectIndex,
+        };
+      });
+
+      setQuestions(processedQs);
       setQuestionsLoading(false);
     });
   }, []);
