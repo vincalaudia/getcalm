@@ -66,7 +66,7 @@ export default function WelcomePage() {
             width={360}
             height={180}
             priority
-            className="object-contain drop-shadow-lg w-[260px] md:w-[360px] h-auto"
+            className="object-contain drop-shadow-lg w-[200px] md:w-[360px] h-auto"
           />
         </motion.div>
 
@@ -83,7 +83,7 @@ export default function WelcomePage() {
 
         {/* Mode Buttons */}
         <motion.div
-          className="flex flex-col items-center gap-0 mt-4 md:mt-8 w-full max-w-[250px] md:max-w-[320px] px-4"
+          className="flex flex-col items-center gap-0 mt-4 md:mt-8 w-full max-w-[190px] md:max-w-[320px] px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, type: "spring", stiffness: 220, damping: 22 }}
@@ -144,7 +144,7 @@ export default function WelcomePage() {
 
       {/* Tito — bottom-left */}
       <motion.div
-        className="absolute bottom-0 left-0 z-10 pointer-events-none w-[110px] md:w-[170px]"
+        className="absolute bottom-0 left-0 z-10 pointer-events-none w-[85px] md:w-[170px]"
         initial={{ opacity: 0, x: -30, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ delay: 0.45, type: "spring", stiffness: 180, damping: 20 }}
@@ -165,7 +165,7 @@ export default function WelcomePage() {
 
       {/* Tito — bottom-right */}
       <motion.div
-        className="absolute bottom-0 right-0 z-10 pointer-events-none w-[100px] md:w-[160px]"
+        className="absolute bottom-0 right-0 z-10 pointer-events-none w-[80px] md:w-[160px]"
         initial={{ opacity: 0, x: 30, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ delay: 0.55, type: "spring", stiffness: 180, damping: 20 }}

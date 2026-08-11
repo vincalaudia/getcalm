@@ -130,6 +130,31 @@ export default function TutorialPage() {
 /*  Shared Sub-Components                                      */
 /* ─────────────────────────────────────────────────────────── */
 
+function TutorialImage({ src, alt, width, height, className = "" }: { src: string; alt: string; width: number; height: number; className?: string }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  return (
+    <div className="relative flex items-center justify-center" style={{ width, height }}>
+      {!isLoaded && (
+        <div 
+          className="absolute inset-0 bg-slate-200/60 animate-pulse rounded-[24px]"
+          style={{ width: "100%", height: "100%" }}
+        />
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        unoptimized
+        onLoad={() => setIsLoaded(true)}
+        className={`${className} transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+      />
+    </div>
+  );
+}
+
+
 /** Speech bubble with a triangle tail pointing up */
 function ChatBubble({ children }: { children: React.ReactNode }) {
   return (
@@ -200,7 +225,7 @@ function Slide1() {
         transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
         className="w-45"
       >
-        <Image src="/assets/tito_hi.gif" alt="Tito" width={240} height={200} className="object-contain" />
+        <TutorialImage src="/assets/tito_hi.gif" alt="Tito" width={240} height={200} className="object-contain" />
       </motion.div>
 
       <ChatBubble>
@@ -237,7 +262,7 @@ function Slide2() {
       {/* Both mascots */}
       <div className="flex items-end justify-center">
         <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 2.5, repeat: Infinity }}>
-          <Image src="/assets/mascots_send.gif" alt="Sending" width={300} height={120} className="object-contain" />
+          <TutorialImage src="/assets/mascots_send.gif" alt="Sending" width={300} height={120} className="object-contain" />
         </motion.div>
 
       </div>
@@ -269,7 +294,7 @@ function Slide3({ gameMode }: { gameMode: "NORMAL" | "HARD" }) {
         transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
         className="w-45"
       >
-        <Image src="/assets/check_tutorial.gif" alt="cek" width={240} height={200} className="object-contain" />
+        <TutorialImage src="/assets/check_tutorial.gif" alt="cek" width={240} height={200} className="object-contain" />
       </motion.div>
 
       <ChatBubble>
@@ -329,7 +354,7 @@ function Slide4() {
         transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
         className="w-45"
       >
-        <Image src="/assets/battery_tutorial.gif" alt="baterai" width={240} height={200} className="object-contain" />
+        <TutorialImage src="/assets/battery_tutorial.gif" alt="baterai" width={240} height={200} className="object-contain" />
       </motion.div>
 
       <ChatBubble>
