@@ -117,8 +117,8 @@ function SidebarButton({
         className={`w-11 h-11 rounded-full flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5 text-Text-Primary transition-all duration-200 shadow-lg shadow-black/50 ${glow && !disabled
           ? "bg-Action-Secondary shadow-glow-secondary"
           : done
-            ? "bg-Surface-Card-Alt ring-1 ring-white/25"
-            : "bg-Surface-Glass backdrop-blur-md border border-white/10"
+            ? "bg-black/70 ring-1 ring-white/25"
+            : "bg-black/50 backdrop-blur-sm border border-white/20"
           }`}
       >
         {icon}

@@ -234,7 +234,7 @@ export default function OnboardingPage() {
 
               {/* Celebrating mascots */}
               <div className="w-full flex justify-center pointer-events-none">
-                <Image src="/assets/greeting.gif" alt=" Tito dan Tita merayakan" width={860} height={500} className="object-contain" />
+                <Image src="/assets/greeting.gif" alt=" Tito dan Tita merayakan" width={860} height={500} className="object-contain" unoptimized />
               </div>
             </div>
 

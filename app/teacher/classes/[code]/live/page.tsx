@@ -38,7 +38,7 @@ export default function LiveLeaderboardPage({ params }: { params: { code: string
       .channel(`realtime-class-live-${code}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "student_sessions", filter: `class_code=eq.${code}` },
+        { event: "*", schema: "public", table: "student_sessions", filter: `class_code=eq.${code}` },
         () => {
           fetchSessions();
         }

@@ -86,7 +86,7 @@ export default function ConfirmEndModal({ isOpen, onClose }: ConfirmEndModalProp
                   >
                     <Image src="/assets/primary_big_button.png" alt="Lanjut dulu" width={400} height={60} className="w-full object-fill drop-shadow-sm" style={{ height: 48, filter: "hue-rotate(280deg) saturate(1.8) brightness(0.85)" }} />
                     <span className="absolute inset-0 flex items-center justify-center font-display font-bold text-[13px] text-white">
-                      Lanjut dulu
+                      Kembali scrolling
                     </span>
                   </button>
                 </div>

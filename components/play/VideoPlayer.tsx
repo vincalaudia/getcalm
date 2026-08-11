@@ -281,19 +281,14 @@ export default function VideoPlayer({
         <div className="absolute inset-0 pointer-events-none opacity-40 [background-image:radial-gradient(1px_1px_at_20%_30%,white,transparent),radial-gradient(1px_1px_at_70%_60%,white,transparent),radial-gradient(1.5px_1.5px_at_40%_80%,white,transparent),radial-gradient(1px_1px_at_85%_20%,white,transparent)]" />
       </div>
 
-      {/* ── Mute Toggle ── */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsMuted((prev) => !prev);
-        }}
-        className="absolute top-[140px] right-3 z-30 p-2.5 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition active:scale-95"
-      >
-        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-      </button>
-
       {/* ── Bottom scrim ── */}
-      <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-Brand-Deep/90 to-transparent pointer-events-none" />
+      <div 
+        className={`absolute inset-x-0 bottom-0 pointer-events-none transition-all duration-300 bg-gradient-to-t ${
+          captionExpanded
+            ? "h-[85%] from-black/95 via-black/70 to-transparent"
+            : "h-64 from-Brand-Deep/90 to-transparent"
+        }`} 
+      />
 
       {/* ── Buffering spinner ── */}
       <AnimatePresence>
@@ -310,17 +305,47 @@ export default function VideoPlayer({
         )}
       </AnimatePresence>
 
-      {/* ── Play / Pause flash icon ── */}
+      {/* ── Play / Pause flash icon & Mute button ── */}
       <AnimatePresence>
-        {showPauseIcon && !ytEmbedUrl && (
+        {(showPauseIcon || isPaused) && !ytEmbedUrl && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+            className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none gap-6"
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.2 }}
             transition={{ duration: 0.18 }}
           >
-            <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            {/* Mute button - only shown when paused */}
+            {isPaused && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMuted((prev) => !prev);
+                }}
+                className="pointer-events-auto p-4 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full text-white transition active:scale-95 shadow-lg"
+              >
+                {isMuted ? <VolumeX className="w-7 h-7" /> : <Volume2 className="w-7 h-7" />}
+              </button>
+            )}
+
+            <button 
+              className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-auto cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                const el = videoElRef.current;
+                if (!el) return;
+                if (isPaused) {
+                  el.play().catch(() => {});
+                  setIsPaused(false);
+                  setShowPauseIcon(true);
+                  if (pauseIconTimer.current) clearTimeout(pauseIconTimer.current);
+                  pauseIconTimer.current = setTimeout(() => setShowPauseIcon(false), 700);
+                } else {
+                  el.pause();
+                  setIsPaused(true);
+                }
+              }}
+            >
               {isPaused ? (
                 /* Play icon */
                 <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white ml-1" aria-hidden>
@@ -332,7 +357,7 @@ export default function VideoPlayer({
                   <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                 </svg>
               )}
-            </div>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

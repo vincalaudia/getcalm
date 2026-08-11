@@ -63,18 +63,16 @@ export default function WelcomePage() {
           <Image
             src="/assets/logo_get_calmer.png"
             alt="Get Calmer"
-            width={400}
-            height={200}
+            width={360}
+            height={180}
             priority
-            className="object-contain drop-shadow-lg"
+            className="object-contain drop-shadow-lg w-[260px] md:w-[360px] h-auto"
           />
         </motion.div>
 
-
-
         {/* Subtitle */}
         <motion.p
-          className="mt-1 font-display text-[13px] text-center px-6"
+          className="mt-1 font-display text-[12px] md:text-[13px] text-center px-6"
           style={{ color: "#3B3669" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -85,7 +83,7 @@ export default function WelcomePage() {
 
         {/* Mode Buttons */}
         <motion.div
-          className="flex flex-col items-center gap-0 mt-8 w-full px-12"
+          className="flex flex-col items-center gap-0 mt-4 md:mt-8 w-full max-w-[250px] md:max-w-[320px] px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, type: "spring", stiffness: 220, damping: 22 }}
@@ -146,7 +144,7 @@ export default function WelcomePage() {
 
       {/* Tito — bottom-left */}
       <motion.div
-        className="absolute bottom-0 left-0 z-10 pointer-events-none"
+        className="absolute bottom-0 left-0 z-10 pointer-events-none w-[110px] md:w-[170px]"
         initial={{ opacity: 0, x: -30, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ delay: 0.45, type: "spring", stiffness: 180, damping: 20 }}
@@ -160,14 +158,14 @@ export default function WelcomePage() {
             alt="Tito si robot teal"
             width={170}
             height={220}
-            className="object-contain"
+            className="object-contain w-full h-auto"
           />
         </motion.div>
       </motion.div>
 
       {/* Tito — bottom-right */}
       <motion.div
-        className="absolute bottom-0 right-0 z-10 pointer-events-none"
+        className="absolute bottom-0 right-0 z-10 pointer-events-none w-[100px] md:w-[160px]"
         initial={{ opacity: 0, x: 30, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ delay: 0.55, type: "spring", stiffness: 180, damping: 20 }}
@@ -181,7 +179,7 @@ export default function WelcomePage() {
             alt="Tito"
             width={160}
             height={220}
-            className="object-contain"
+            className="object-contain w-full h-auto"
           />
         </motion.div>
       </motion.div>

@@ -13,11 +13,12 @@
  * Style: sama dengan halaman utama (pastel BG + rainbow arcs + KG Blank Space Solid).
  * Bahasa: mudah untuk anak kelas 4 SD.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useGameStore } from "@/hooks/useGameStore";
+import { startPreload } from "@/lib/feedPreloader";
 
 const TOTAL = 4;
 
@@ -35,6 +36,11 @@ export default function TutorialPage() {
   const gameMode = useGameStore((s) => s.gameMode) ?? "NORMAL";
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
+
+  // Pre-load videos while the user is reading the tutorial
+  useEffect(() => {
+    startPreload().catch(console.error);
+  }, []);
 
   const goNext = () => {
     if (step < TOTAL - 1) { setDir(1); setStep((s) => s + 1); }

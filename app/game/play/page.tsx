@@ -16,15 +16,17 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore, calculateStats, getWatchedSecondsMap } from "@/hooks/useGameStore";
 import { supabase, fetchVideoFeed } from "@/lib/supabaseClient";
+import { startPreload, subscribeToPreload } from "@/lib/feedPreloader";
 import type { VideoRow } from "@/lib/types";
 import Image from "next/image";
 import Hud from "@/components/play/Hud";
 import VideoPlayer from "@/components/play/VideoPlayer";
 import RevealOverlay from "@/components/play/RevealOverlay";
 import CekSheet from "@/components/play/BottomSheets/CekSheet";
+import ConfirmEndModal from "@/components/play/ConfirmEndModal";
 import LaporkanSheet from "@/components/play/BottomSheets/LaporkanSheet";
 import BagikanSheet from "@/components/play/BottomSheets/BagikanSheet";
 
@@ -40,6 +42,7 @@ export default function PlayPage() {
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [activeSheet, setActiveSheet] = useState<ActiveSheet>(null);
   const [preloadProgress, setPreloadProgress] = useState(0);
+  const [showEndPopup, setShowEndPopup] = useState(false);
 
   // Read store values — store selectors are stable references
   const isSessionEnded = useGameStore((s) => s.isSessionEnded);
@@ -61,42 +64,26 @@ export default function PlayPage() {
   useEffect(() => {
     let cancelled = false;
     setLoadState("loading");
-    fetchVideoFeed()
-      .then(async (rows) => {
-        if (!cancelled) {
-          // Shuffle the order of the videos
-          const shuffledVideos = [...(rows as VideoRow[])];
-          for (let i = shuffledVideos.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffledVideos[i], shuffledVideos[j]] = [shuffledVideos[j], shuffledVideos[i]];
-          }
-          setVideos(shuffledVideos);
 
-          let loaded = 0;
-          await Promise.all(
-            shuffledVideos.map(async (v) => {
-              try {
-                const res = await fetch(v.video_url);
-                await res.blob();
-              } catch (e) {
-                console.warn("Failed to preload", v.video_url);
-              }
-              if (!cancelled) {
-                loaded++;
-                setPreloadProgress(Math.round((loaded / shuffledVideos.length) * 100));
-              }
-            })
-          );
-          
-          if (!cancelled) {
-            setLoadState("ready");
-          }
+    const unsubscribe = subscribeToPreload((p) => {
+      if (!cancelled) setPreloadProgress(p);
+    });
+
+    startPreload()
+      .then((shuffledVideos) => {
+        if (!cancelled) {
+          setVideos(shuffledVideos);
+          setLoadState("ready");
         }
       })
       .catch(() => {
         if (!cancelled) setLoadState("error");
       });
-    return () => { cancelled = true; };
+
+    return () => { 
+      cancelled = true;
+      unsubscribe();
+    };
   }, []); // run once
 
   // ─── Effect 1b: Prevent back navigation to tutorial ──────────────────────
@@ -142,6 +129,9 @@ export default function PlayPage() {
           shares_count: stats.shares_count,
           shares_correct: stats.shares_correct,
           shares_incorrect: stats.shares_incorrect,
+          likes_count: stats.likes_count,
+          likes_correct: stats.likes_correct,
+          likes_incorrect: stats.likes_incorrect,
           ai_reports_count: stats.ai_reports_count,
           ai_reports_correct: stats.ai_reports_correct,
           ai_reports_incorrect: stats.ai_reports_incorrect,
@@ -239,8 +229,28 @@ export default function PlayPage() {
               onOpenBagikan={(v) => setActiveSheet({ type: "BAGIKAN", video: v })}
             />
           ))}
+          
+          {/* End of feed trigger element */}
+          {videos.length > 0 && (
+            <motion.div
+              className="feed-item flex items-center justify-center bg-black relative"
+              onViewportEnter={() => setShowEndPopup(true)}
+              viewport={{ root: containerRef, amount: 0.1 }}
+            />
+          )}
         </div>
       )}
+
+      {/* End of Scroll Popup */}
+      <ConfirmEndModal 
+        isOpen={showEndPopup} 
+        onClose={() => {
+          setShowEndPopup(false);
+          if (containerRef.current) {
+            containerRef.current.scrollBy({ top: -containerRef.current.clientHeight, behavior: "smooth" });
+          }
+        }} 
+      />
 
       <CekSheet
         video={activeSheet?.type === "CEK" ? activeSheet.video : null}

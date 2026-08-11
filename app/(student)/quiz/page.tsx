@@ -307,7 +307,7 @@ export default function QuizPage() {
     setSelectedAnswer(idx);
     const correct = idx === currentQ.correct_index;
     if (correct) {
-      setQuizScore((prev) => prev + 10);
+      setQuizScore((prev) => prev + 5);
       setCorrectCount((prev) => prev + 1);
     }
     setAnswersLog((prev) => [...prev, { question_id: currentQ.id, is_correct: correct, selected_index: idx }]);
