@@ -144,7 +144,7 @@ export default function WelcomePage() {
 
       {/* Tito — bottom-left */}
       <motion.div
-        className="absolute bottom-0 left-0 z-10 pointer-events-none w-[85px] md:w-[170px]"
+        className="absolute -bottom-2 -left-2 z-10 pointer-events-none w-[130px] md:w-[170px]"
         initial={{ opacity: 0, x: -30, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ delay: 0.45, type: "spring", stiffness: 180, damping: 20 }}
@@ -163,9 +163,9 @@ export default function WelcomePage() {
         </motion.div>
       </motion.div>
 
-      {/* Tito — bottom-right */}
+      {/* Tita — bottom-right */}
       <motion.div
-        className="absolute bottom-0 right-0 z-10 pointer-events-none w-[80px] md:w-[160px]"
+        className="absolute -bottom-1 -right-1 z-10 pointer-events-none w-[120px] md:w-[160px]"
         initial={{ opacity: 0, x: 30, y: 10 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ delay: 0.55, type: "spring", stiffness: 180, damping: 20 }}
