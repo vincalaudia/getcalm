@@ -124,6 +124,16 @@ export default function QuizPage() {
     mostWatchedVideo: null, mostWatchedSeconds: 0, isLoading: true
   });
   const reportRef = useRef<HTMLDivElement>(null);
+  const explanationRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to explanation when an answer is selected
+  useEffect(() => {
+    if (selectedAnswer !== null && explanationRef.current) {
+      setTimeout(() => {
+        explanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
+    }
+  }, [selectedAnswer]);
 
   // We use a ref to capture the latest quiz score at the time we enter the
   // report phase, so the async closure doesn't read a stale value.
@@ -307,7 +317,7 @@ export default function QuizPage() {
     setSelectedAnswer(idx);
     const correct = idx === currentQ.correct_index;
     if (correct) {
-      setQuizScore((prev) => prev + 5);
+      setQuizScore((prev) => prev + 10);
       setCorrectCount((prev) => prev + 1);
     }
     setAnswersLog((prev) => [...prev, { question_id: currentQ.id, is_correct: correct, selected_index: idx }]);
@@ -449,6 +459,7 @@ export default function QuizPage() {
             <AnimatePresence>
               {isAnswered && (
                 <motion.div
+                  ref={explanationRef}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
