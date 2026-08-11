@@ -64,12 +64,17 @@ export default function PlayPage() {
     fetchVideoFeed()
       .then(async (rows) => {
         if (!cancelled) {
-          const fetchedVideos = rows as VideoRow[];
-          setVideos(fetchedVideos);
+          // Shuffle the order of the videos
+          const shuffledVideos = [...(rows as VideoRow[])];
+          for (let i = shuffledVideos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledVideos[i], shuffledVideos[j]] = [shuffledVideos[j], shuffledVideos[i]];
+          }
+          setVideos(shuffledVideos);
 
           let loaded = 0;
           await Promise.all(
-            fetchedVideos.map(async (v) => {
+            shuffledVideos.map(async (v) => {
               try {
                 const res = await fetch(v.video_url);
                 await res.blob();
@@ -78,7 +83,7 @@ export default function PlayPage() {
               }
               if (!cancelled) {
                 loaded++;
-                setPreloadProgress(Math.round((loaded / fetchedVideos.length) * 100));
+                setPreloadProgress(Math.round((loaded / shuffledVideos.length) * 100));
               }
             })
           );
