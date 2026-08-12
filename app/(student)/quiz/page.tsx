@@ -159,19 +159,17 @@ export default function QuizPage() {
     const fetchReport = async () => {
       try {
         const videoIds = Array.from(viewHistory);
-        if (videoIds.length === 0) {
-          setReportData(prev => ({ ...prev, isLoading: false }));
-          return;
+        let videosData: any[] = [];
+        if (videoIds.length > 0) {
+          const { data: videos, error } = await supabase
+            .from("videos")
+            .select("*")
+            .in("id", videoIds);
+          if (error) throw error;
+          videosData = videos || [];
         }
 
-        const { data: videos, error } = await supabase
-          .from("videos")
-          .select("*")
-          .in("id", videoIds);
-
-        if (error) throw error;
-
-        const stats = calculateStats(videoStates, videos || []);
+        const stats = calculateStats(videoStates, videosData);
 
         const watchMap = getWatchedSecondsMap();
         let maxTime = 0;
@@ -628,7 +626,7 @@ export default function QuizPage() {
                       <div className="flex gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl overflow-hidden">
                         <div className="w-24 aspect-[9/16] shrink-0 rounded-md overflow-hidden bg-black relative shadow-sm">
                           <video
-                            src={reportData.mostWatchedVideo.video_url}
+                            src={reportData.mostWatchedVideo?.video_url}
                             className="w-full h-full object-contain"
                             preload="metadata"
                             controls
@@ -636,9 +634,9 @@ export default function QuizPage() {
                           />
                         </div>
                         <div className="flex-1 flex flex-col justify-center">
-                          <p className="text-[12px] font-bold text-slate-800 mb-1">@{reportData.mostWatchedVideo.author_username}</p>
+                          <p className="text-[12px] font-bold text-slate-800 mb-1">@{reportData.mostWatchedVideo?.author_username}</p>
                           <p className="text-[11px] text-slate-600 line-clamp-3 italic leading-relaxed">
-                            "{reportData.mostWatchedVideo.caption}"
+                            "{reportData.mostWatchedVideo?.caption}"
                           </p>
                         </div>
                       </div>
