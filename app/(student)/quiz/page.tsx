@@ -511,7 +511,7 @@ export default function QuizPage() {
             <div className="flex flex-col gap-3 w-full">
               <button onClick={() => setPhase("report")} className="btn-chunky w-full flex items-center justify-center gap-2 mb-2">
                 <FileText className="w-5 h-5" />
-                Lihat Laporan Evaluasi 📊
+                Lihat Laporan Evaluasi
               </button>
               <button onClick={handleRestart} className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-body font-semibold text-sm transition-all duration-200 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm">
                 <RefreshCw className="w-4 h-4" />

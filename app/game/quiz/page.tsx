@@ -509,7 +509,7 @@ export default function QuizPage() {
             <div className="flex flex-col gap-3 w-full">
               <button onClick={() => setPhase("report")} className="btn-chunky w-full flex items-center justify-center gap-2 mb-2">
                 <FileText className="w-5 h-5" />
-                Lihat Laporan Evaluasi 📊
+                Lihat Laporan Evaluasi
               </button>
               <button onClick={handleRestart} className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-body font-semibold text-sm transition-all duration-200 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm">
                 <RefreshCw className="w-4 h-4" />
@@ -625,19 +625,19 @@ export default function QuizPage() {
                       </p>
                       <div className="flex gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl overflow-hidden">
                         <div className="w-24 aspect-[9/16] shrink-0 rounded-md overflow-hidden bg-black relative shadow-sm">
-                          <video 
-                            src={reportData.mostWatchedVideo.video_url} 
-                            className="w-full h-full object-contain" 
-                            preload="metadata" 
+                          <video
+                            src={reportData.mostWatchedVideo.video_url}
+                            className="w-full h-full object-contain"
+                            preload="metadata"
                             controls
                             playsInline
                           />
                         </div>
                         <div className="flex-1 flex flex-col justify-center">
-                           <p className="text-[12px] font-bold text-slate-800 mb-1">@{reportData.mostWatchedVideo.author_username}</p>
-                           <p className="text-[11px] text-slate-600 line-clamp-3 italic leading-relaxed">
-                             "{reportData.mostWatchedVideo.caption}"
-                           </p>
+                          <p className="text-[12px] font-bold text-slate-800 mb-1">@{reportData.mostWatchedVideo.author_username}</p>
+                          <p className="text-[11px] text-slate-600 line-clamp-3 italic leading-relaxed">
+                            "{reportData.mostWatchedVideo.caption}"
+                          </p>
                         </div>
                       </div>
                     </div>
