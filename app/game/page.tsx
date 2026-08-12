@@ -52,7 +52,7 @@ export default function WelcomePage() {
       {/* ══════════════════════════════════════
           Main content — flows from top
       ══════════════════════════════════════ */}
-      <div className="relative z-10 flex flex-col items-center w-full pt-[50px]">
+      <div className="relative z-10 flex flex-col items-center w-full pt-[100px]">
 
         {/* Logo */}
         <motion.div
@@ -66,13 +66,13 @@ export default function WelcomePage() {
             width={360}
             height={180}
             priority
-            className="object-contain drop-shadow-lg w-[200px] md:w-[360px] h-auto"
+            className="object-contain drop-shadow-lg w-[340px] md:w-[380px] h-auto"
           />
         </motion.div>
 
         {/* Subtitle */}
         <motion.p
-          className="mt-1 font-display text-[12px] md:text-[13px] text-center px-6"
+          className="mt-1 font-display text-[14px] md:text-[15px] text-center px-6"
           style={{ color: "#3B3669" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -83,7 +83,7 @@ export default function WelcomePage() {
 
         {/* Mode Buttons */}
         <motion.div
-          className="flex flex-col items-center gap-0 mt-4 md:mt-8 w-full max-w-[190px] md:max-w-[320px] px-4"
+          className="flex flex-col items-center gap-0 mt-8 md:mt-12 w-full max-w-[290px] md:max-w-[340px] px-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, type: "spring", stiffness: 220, damping: 22 }}
@@ -108,7 +108,7 @@ export default function WelcomePage() {
           <motion.button
             onClick={() => handleSelect("HARD")}
             whileTap={{ scale: 0.93 }}
-            className="w-full cursor-pointer select-none focus:outline-none -mt-4"
+            className="w-full cursor-pointer select-none focus:outline-none -mt-1"
             aria-label="Pilih Mode Tantangan"
           >
             <Image

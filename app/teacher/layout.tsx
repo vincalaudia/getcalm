@@ -46,7 +46,16 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
       <header className="w-full px-6 py-4 flex items-center justify-between border-b" style={{ background: "white", borderColor: "#D1F0EB" }}>
         <div className="flex items-center gap-2">
           <span className="font-display font-extrabold text-lg" style={{ color: "#1A2A5E" }}>GetCalmer</span>
-          <span className="font-body text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "#C6F516", color: "#1A2A5E" }}>GURU</span>
+          <span className="font-body text-xs px-2 py-0.5 rounded-full font-semibold mr-2 md:mr-6" style={{ background: "#C6F516", color: "#1A2A5E" }}>GURU</span>
+
+          <nav className="hidden md:flex items-center gap-6">
+            <button onClick={() => router.push("/teacher/classes")} className={`font-body text-sm font-semibold transition-colors ${pathname === "/teacher/classes" ? "text-[#1A2A5E] border-b-2 border-[#1A2A5E]" : "text-[#6B7A99] hover:text-[#1A2A5E]"}`}>
+              Kelas
+            </button>
+            <button onClick={() => router.push("/teacher/module")} className={`font-body text-sm font-semibold transition-colors ${pathname.includes("/teacher/module") ? "text-[#1A2A5E] border-b-2 border-[#1A2A5E]" : "text-[#6B7A99] hover:text-[#1A2A5E]"}`}>
+              Modul
+            </button>
+          </nav>
         </div>
         <div className="flex items-center gap-4">
           {email && <span className="font-body text-xs" style={{ color: "#6B7A99" }}>{email}</span>}

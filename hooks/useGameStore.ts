@@ -272,11 +272,18 @@ export const useGameStore = create<GameState>((set, get) => ({
     const newlyHit: number[] = [];
 
     if (isSetA) {
-      if (elapsedSeconds >= 10 && !already.has(10)) { deduction += 2; newlyHit.push(10); }
+      // Set A: News/Hoax/AI Hoax. -3 every 10 seconds, up to 30s.
+      if (elapsedSeconds >= 10 && !already.has(10)) { deduction += 3; newlyHit.push(10); }
+      if (elapsedSeconds >= 20 && !already.has(20)) { deduction += 3; newlyHit.push(20); }
+      if (elapsedSeconds >= 30 && !already.has(30)) { deduction += 3; newlyHit.push(30); }
     } else if (isSetB) {
-      if (elapsedSeconds >= 10 && !already.has(10)) { deduction += 5; newlyHit.push(10); }
-      if (elapsedSeconds >= 20 && !already.has(20)) { deduction += 5; newlyHit.push(20); }
-      if (elapsedSeconds >= 30 && !already.has(30)) { deduction += 5; newlyHit.push(30); }
+      // Set B: Entertainment. -5 every 8 seconds (8, 16, 24, 32, 40, etc.)
+      for (let t = 8; t <= elapsedSeconds; t += 8) {
+        if (!already.has(t)) {
+          deduction += 5;
+          newlyHit.push(t);
+        }
+      }
       if (elapsedSeconds >= durasiTotal && !already.has(-1)) { deduction += 5; newlyHit.push(-1); }
     }
 
