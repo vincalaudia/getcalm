@@ -154,7 +154,7 @@ export default function QuizPage() {
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "report" || !reportData.isLoading) return;
+    if ((phase !== "report" && phase !== "result") || !reportData.isLoading) return;
 
     const fetchReport = async () => {
       try {
