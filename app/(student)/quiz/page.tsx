@@ -182,7 +182,7 @@ export default function QuizPage() {
           }
         });
 
-        const mostWatched = maxVidId ? (videos ?? []).find(v => v.id === maxVidId) || null : null;
+        const mostWatched = maxVidId ? (videosData ?? []).find(v => v.id === maxVidId) || null : null;
 
         setReportData({
           totalCorrectActions: stats.total_correct_actions,
